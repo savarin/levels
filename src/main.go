@@ -57,7 +57,7 @@ type SimpleDB struct {
 	store map[string][]byte
 }
 
-func (db *SimpleDB) Get(key []byte) (value []byte, err error) {
+func (db SimpleDB) Get(key []byte) (value []byte, err error) {
 	v, ok := db.store[string(key)]
 
 	if !ok {
@@ -67,17 +67,17 @@ func (db *SimpleDB) Get(key []byte) (value []byte, err error) {
 	return v, nil
 }
 
-func (db *SimpleDB) Has(key []byte) (ret bool, err error) {
+func (db SimpleDB) Has(key []byte) (ret bool, err error) {
 	_, ok := db.store[string(key)]
 	return ok, nil
 }
 
-func (db *SimpleDB) Put(key, value []byte) error {
+func (db SimpleDB) Put(key, value []byte) error {
 	db.store[string(key)] = value
 	return nil
 }
 
-func (db *SimpleDB) Delete(key []byte) error {
+func (db SimpleDB) Delete(key []byte) error {
 	_, ok := db.store[string(key)]
 
 	if !ok {
@@ -88,7 +88,7 @@ func (db *SimpleDB) Delete(key []byte) error {
 	return nil
 }
 
-func (db *SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
+func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	strings := make([]string, len(db.store))
 	counter := 0
 
