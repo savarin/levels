@@ -110,7 +110,7 @@ func (db *SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	values := make([][]byte, 0)
 
 	for _, key := range strings {
-		if key >= startString && key <= limitString {
+		if key >= startString && key < limitString {
 			keys = append(keys, []byte(key))
 			values = append(values, []byte(db.store[key]))
 		}
