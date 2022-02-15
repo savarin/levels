@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sort"
 )
 
@@ -130,7 +129,7 @@ type SimpleIterator struct {
 }
 
 func (s *SimpleIterator) Next() bool {
-	if s.index == len(s.keys) {
+	if s.index == len(s.keys) - 1 {
 		return false
 	}
 
