@@ -1,20 +1,14 @@
 package main
 
 import (
+	"errors"
 	"sort"
 )
 
-type KeyError struct{}
-
-func (e *KeyError) Error() string {
-	return "Key not found"
-}
-
-type ValueError struct{}
-
-func (e *ValueError) Error() string {
-	return "Inappropriate value"
-}
+var (
+	KeyError   = errors.New("Key not found")
+	ValueError = errors.New("Inappropriate value")
+)
 
 type DB interface {
 	// Get gets the value for the given key. It returns an error if the
@@ -56,11 +50,17 @@ type SimpleDB struct {
 	store map[string][]byte
 }
 
+func NewSimpleDB() *SimpleDB {
+	return &SimpleDB{
+		store: make(map[string][]byte),
+	}
+}
+
 func (db SimpleDB) Get(key []byte) (value []byte, err error) {
 	v, ok := db.store[string(key)]
 
 	if !ok {
-		return nil, &KeyError{}
+		return nil, KeyError
 	}
 
 	return v, nil
@@ -80,7 +80,7 @@ func (db SimpleDB) Delete(key []byte) error {
 	_, ok := db.store[string(key)]
 
 	if !ok {
-		return &KeyError{}
+		return KeyError
 	}
 
 	delete(db.store, string(key))
@@ -102,7 +102,7 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	limitString := string(limit)
 
 	if startString > limitString {
-		return nil, &ValueError{}
+		return nil, ValueError
 	}
 
 	keys := make([][]byte, 0)
