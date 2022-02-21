@@ -13,7 +13,7 @@ const (
 	begin  = "a"
 	end    = "z"
 	stride = 8
-	limit  = 100
+	limit  = 10000
 )
 
 func loadWords() ([]string, error) {

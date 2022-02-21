@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"sort"
 )
 
@@ -113,4 +114,8 @@ func (iter *SimpleIterator) Value() []byte {
 	}
 
 	return iter.values[iter.index]
+}
+
+func (iter *SimpleIterator) Write(w io.Writer) {
+	Write(iter, w)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io"
 )
 
 var (
@@ -43,6 +44,8 @@ type Iterator interface {
 
 	// Value returns the value of the current key/value pair, or nil if done.
 	Value() []byte
+
+	Write(w io.Writer)
 }
 
 type Item struct {

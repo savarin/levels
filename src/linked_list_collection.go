@@ -1,5 +1,9 @@
 package main
 
+import (
+	"io"
+)
+
 type linkedListNode struct {
 	item Item
 	next *linkedListNode
@@ -105,4 +109,8 @@ func (iter *LinkedListIterator) Key() []byte {
 
 func (iter *LinkedListIterator) Value() []byte {
 	return iter.node.item.Value
+}
+
+func (iter *LinkedListIterator) Write(w io.Writer) {
+	Write(iter, w)
 }
