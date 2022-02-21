@@ -37,10 +37,12 @@ func (w *simpleWriter) WriteLen(n uint32) error {
 	return w.Write(buf[:])
 }
 
-func Flush(iter Iterator, w io.Writer) error {
+func Flush(db DB, w io.Writer) error {
 	writer := simpleWriter{
 		Writer: w,
 	}
+
+	iter, _ := db.RangeScan([]byte{}, []byte{})
 
 	var sparseIndex []sparseIndexEntry
 	var nextCheckpoint uint32

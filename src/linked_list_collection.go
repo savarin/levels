@@ -84,6 +84,10 @@ func (db LinkedListDB) RangeScan(start, limit []byte) (Iterator, error) {
 	return &LinkedListIterator{db: &db, node: node, start: start, limit: limit}, nil
 }
 
+func (db LinkedListDB) Flush(w io.Writer) {
+	Flush(db, w)
+}
+
 type LinkedListIterator struct {
 	db           *LinkedListDB
 	node         *linkedListNode
@@ -113,8 +117,4 @@ func (iter *LinkedListIterator) Key() []byte {
 
 func (iter *LinkedListIterator) Value() []byte {
 	return iter.node.item.Value
-}
-
-func (iter *LinkedListIterator) Flush(w io.Writer) {
-	Flush(iter, w)
 }

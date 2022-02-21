@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -28,7 +29,7 @@ func loadWords() ([]string, error) {
 	s := bufio.NewScanner(f)
 
 	for s.Scan() && len(w) < limit {
-		w = append(w, s.Text())
+		w = append(w, strings.ToLower(s.Text()))
 	}
 
 	return w, nil

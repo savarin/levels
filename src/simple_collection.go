@@ -53,7 +53,7 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	if startString > limitString {
 		return nil, ValueError
 	}
-	
+
 	strings := make([]string, len(db.store))
 	counter := 0
 
@@ -79,6 +79,10 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 		values: values,
 		index:  0,
 	}, nil
+}
+
+func (db SimpleDB) Flush(w io.Writer) {
+	Flush(db, w)
 }
 
 type SimpleIterator struct {
@@ -114,8 +118,4 @@ func (iter *SimpleIterator) Value() []byte {
 	}
 
 	return iter.values[iter.index]
-}
-
-func (iter *SimpleIterator) Flush(w io.Writer) {
-	Flush(iter, w)
 }

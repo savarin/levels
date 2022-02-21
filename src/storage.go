@@ -28,6 +28,8 @@ type DB interface {
 	// RangeScan returns an Iterator (see below) for scanning through all
 	// key-value pairs in the given range, ordered by key ascending.
 	RangeScan(start, limit []byte) (Iterator, error)
+
+	Flush(w io.Writer)
 }
 
 type Iterator interface {
@@ -44,8 +46,6 @@ type Iterator interface {
 
 	// Value returns the value of the current key/value pair, or nil if done.
 	Value() []byte
-
-	Flush(w io.Writer)
 }
 
 type Item struct {
