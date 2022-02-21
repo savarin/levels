@@ -10,8 +10,8 @@ import (
 
 const (
 	path   = "/usr/share/dict/words"
-	begin  = "a"
-	end    = "z"
+	begin  = ""
+	end    = ""
 	stride = 8
 	limit  = 10000
 )

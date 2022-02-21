@@ -91,7 +91,11 @@ type LinkedListIterator struct {
 }
 
 func (iter *LinkedListIterator) Next() bool {
-	if iter.node == iter.db.tail || string(iter.node.item.Key) > string(iter.limit) {
+	if iter.node == iter.db.tail {
+		return false
+	}
+
+	if len(iter.limit) > 0 && string(iter.node.item.Key) > string(iter.limit) {
 		return false
 	}
 

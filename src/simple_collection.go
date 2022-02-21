@@ -57,20 +57,27 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 
 	sort.Strings(strings)
 
-	startString := string(start)
-	limitString := string(limit)
-
-	if startString > limitString {
-		return nil, ValueError
-	}
-
 	keys := make([][]byte, 0)
 	values := make([][]byte, 0)
 
-	for _, key := range strings {
-		if key >= startString && key < limitString {
+	if len(start) == 0 && len(limit) == 0 {
+		for _, key := range strings {
 			keys = append(keys, []byte(key))
 			values = append(values, []byte(db.store[key]))
+		}
+	} else {
+		startString := string(start)
+		limitString := string(limit)
+
+		if startString > limitString {
+			return nil, ValueError
+		}
+
+		for _, key := range strings {
+			if key >= startString && key < limitString {
+				keys = append(keys, []byte(key))
+				values = append(values, []byte(db.store[key]))
+			}
 		}
 	}
 
