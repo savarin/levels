@@ -81,8 +81,8 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	}, nil
 }
 
-func (db SimpleDB) Flush(w io.Writer) {
-	Flush(db, w)
+func (db SimpleDB) Flush(w io.Writer) error {
+	return Flush(db, w)
 }
 
 type SimpleIterator struct {
