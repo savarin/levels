@@ -123,6 +123,6 @@ func (iter *SimpleIterator) Value() []byte {
 	return iter.values[iter.index]
 }
 
-func (iter *SimpleIterator) Write(w io.Writer) {
-	Write(iter, w)
+func (iter *SimpleIterator) Flush(w io.Writer) {
+	Flush(iter, w)
 }

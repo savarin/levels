@@ -2,8 +2,18 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 )
+
+const (
+	blockSize = 1024
+)
+
+type sparseIndexEntry struct {
+	key    []byte
+	offset uint32
+}
 
 type simpleWriter struct {
 	Offset uint32
@@ -27,19 +37,49 @@ func (w *simpleWriter) WriteLen(n uint32) error {
 	return w.Write(buf[:])
 }
 
-func Write(iter Iterator, w io.Writer) {
+func Flush(iter Iterator, w io.Writer) error {
 	writer := simpleWriter{
 		Writer: w,
 	}
 
+	var sparseIndex []sparseIndexEntry
+	var nextCheckpoint uint32
+
 	for {
+		startOffset := writer.Offset
+
 		key := iter.Key()
 		value := iter.Value()
 
-		writer.WriteLen(uint32(len(key)))
-		writer.Write(key)
-		writer.WriteLen(uint32(len(value)))
-		writer.Write(value)
+		if nextCheckpoint <= startOffset {
+			e := sparseIndexEntry{
+				key:    key,
+				offset: startOffset,
+			}
+
+			sparseIndex = append(sparseIndex, e)
+			nextCheckpoint = startOffset + uint32(blockSize)
+		}
+
+		err := writer.WriteLen(uint32(len(key)))
+		if err != nil {
+			return fmt.Errorf("writing length (%d) of key %q in table: %w", len(key), key, err)
+		}
+
+		err = writer.Write(key)
+		if err != nil {
+			return fmt.Errorf("writing key %q: %w in table", key, err)
+		}
+
+		err = writer.WriteLen(uint32(len(value)))
+		if err != nil {
+			return fmt.Errorf("writing length (%d) of value %q in table: %w", len(value), value, err)
+		}
+
+		err = writer.Write(value)
+		if err != nil {
+			return fmt.Errorf("writing value %q in table: %w", value, err)
+		}
 
 		hasNext := iter.Next()
 
@@ -47,4 +87,33 @@ func Write(iter Iterator, w io.Writer) {
 			break
 		}
 	}
+
+	sparseIndexOffset := writer.Offset
+
+	for _, e := range sparseIndex {
+		key := e.key
+		offset := e.offset
+
+		err := writer.WriteLen(uint32(len(key)))
+		if err != nil {
+			return fmt.Errorf("writing length (%d) of key in sparse index%q: %w", len(key), key, err)
+		}
+
+		err = writer.Write(key)
+		if err != nil {
+			return fmt.Errorf("writing key %q in sparse index: %w", key, err)
+		}
+
+		err = writer.WriteLen(offset)
+		if err != nil {
+			return fmt.Errorf("writing value %q in sparse index: %w", offset, err)
+		}
+	}
+
+	err := writer.WriteLen(sparseIndexOffset)
+	if err != nil {
+		return fmt.Errorf("writing starting offset in sparse index: %s", err)
+	}
+
+	return nil
 }

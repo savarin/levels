@@ -115,6 +115,6 @@ func (iter *LinkedListIterator) Value() []byte {
 	return iter.node.item.Value
 }
 
-func (iter *LinkedListIterator) Write(w io.Writer) {
-	Write(iter, w)
+func (iter *LinkedListIterator) Flush(w io.Writer) {
+	Flush(iter, w)
 }
