@@ -47,6 +47,13 @@ func (db SimpleDB) Delete(key []byte) error {
 }
 
 func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
+	startString := string(start)
+	limitString := string(limit)
+
+	if startString > limitString {
+		return nil, ValueError
+	}
+	
 	strings := make([]string, len(db.store))
 	counter := 0
 
@@ -60,24 +67,10 @@ func (db SimpleDB) RangeScan(start, limit []byte) (Iterator, error) {
 	keys := make([][]byte, 0)
 	values := make([][]byte, 0)
 
-	if len(start) == 0 && len(limit) == 0 {
-		for _, key := range strings {
+	for _, key := range strings {
+		if key >= startString && (len(limit) == 0 || key < limitString) {
 			keys = append(keys, []byte(key))
 			values = append(values, []byte(db.store[key]))
-		}
-	} else {
-		startString := string(start)
-		limitString := string(limit)
-
-		if startString > limitString {
-			return nil, ValueError
-		}
-
-		for _, key := range strings {
-			if key >= startString && key < limitString {
-				keys = append(keys, []byte(key))
-				values = append(values, []byte(db.store[key]))
-			}
 		}
 	}
 

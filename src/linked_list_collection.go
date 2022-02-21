@@ -67,7 +67,7 @@ func (db LinkedListDB) Put(key, value []byte) error {
 	return nil
 }
 
-func (db *LinkedListDB) Delete(key []byte) error {
+func (db LinkedListDB) Delete(key []byte) error {
 	node := db.first(key)
 
 	if node != db.tail && string(node.item.Key) == string(key) {
@@ -79,9 +79,9 @@ func (db *LinkedListDB) Delete(key []byte) error {
 	return KeyError
 }
 
-func (db *LinkedListDB) RangeScan(start, limit []byte) (Iterator, error) {
+func (db LinkedListDB) RangeScan(start, limit []byte) (Iterator, error) {
 	node := db.first(start)
-	return &LinkedListIterator{db: db, node: node, start: start, limit: limit}, nil
+	return &LinkedListIterator{db: &db, node: node, start: start, limit: limit}, nil
 }
 
 type LinkedListIterator struct {
