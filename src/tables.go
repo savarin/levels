@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	blockSize = 1024
+	blockSize = 1 << 13
 )
 
 type sparseIndexEntry struct {
