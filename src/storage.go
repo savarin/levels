@@ -1,5 +1,14 @@
 package main
 
+import (
+	"errors"
+)
+
+var (
+	KeyError   = errors.New("Key not found")
+	ValueError = errors.New("Inappropriate value")
+)
+
 type DB interface {
 	// Get gets the value for the given key. It returns an error if the
 	// DB does not contain the key.
@@ -34,4 +43,8 @@ type Iterator interface {
 
 	// Value returns the value of the current key/value pair, or nil if done.
 	Value() []byte
+}
+
+type Item struct {
+	Key, Value []byte
 }

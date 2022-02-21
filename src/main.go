@@ -10,9 +10,10 @@ import (
 
 const (
 	path   = "/usr/share/dict/words"
+	begin  = "a"
+	end    = "z"
 	stride = 8
-	begin  = "echo"
-	end    = "server"
+	limit  = 100
 )
 
 func loadWords() ([]string, error) {
@@ -26,7 +27,7 @@ func loadWords() ([]string, error) {
 	w := make([]string, 0)
 	s := bufio.NewScanner(f)
 
-	for s.Scan() {
+	for s.Scan() && len(w) < limit {
 		w = append(w, s.Text())
 	}
 
@@ -65,7 +66,7 @@ func runTest(words []string, db DB, name string) {
 			break
 		}
 	}
-	fmt.Printf("%-20s", time.Since(start))
+	fmt.Printf("%-20s\n", time.Since(start))
 }
 
 func main() {
@@ -75,10 +76,8 @@ func main() {
 		log.Fatalf("Error: loading words\n")
 	}
 
-	store := make(map[string][]byte, 0)
-	db := SimpleDB{store: store}
-
 	fmt.Printf("%-20s%-20s%-20s%-20s%-20s\n", "name", "puts", "deletes", "gets", "rangescan")
-	runTest(words, db, "simple")
+	runTest(words, NewSimpleDB(), "simple")
+	runTest(words, NewLinkedListDB(), "linked list")
 	fmt.Printf("\n")
 }

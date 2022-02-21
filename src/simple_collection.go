@@ -1,13 +1,7 @@
 package main
 
 import (
-	"errors"
 	"sort"
-)
-
-var (
-	KeyError   = errors.New("Key not found")
-	ValueError = errors.New("Inappropriate value")
 )
 
 type SimpleDB struct {
@@ -92,31 +86,31 @@ type SimpleIterator struct {
 	index  int
 }
 
-func (s *SimpleIterator) Next() bool {
-	if s.index == len(s.keys)-1 {
+func (iter *SimpleIterator) Next() bool {
+	if len(iter.keys) == 0 || iter.index == len(iter.keys)-1 {
 		return false
 	}
 
-	s.index++
+	iter.index++
 	return true
 }
 
-func (s *SimpleIterator) Error() error {
+func (iter *SimpleIterator) Error() error {
 	return nil
 }
 
-func (s *SimpleIterator) Key() []byte {
-	if len(s.keys) == 0 {
+func (iter *SimpleIterator) Key() []byte {
+	if len(iter.keys) == 0 {
 		return nil
 	}
 
-	return s.keys[s.index]
+	return iter.keys[iter.index]
 }
 
-func (s *SimpleIterator) Value() []byte {
-	if len(s.values) == 0 {
+func (iter *SimpleIterator) Value() []byte {
+	if len(iter.values) == 0 {
 		return nil
 	}
 
-	return s.values[s.index]
+	return iter.values[iter.index]
 }
