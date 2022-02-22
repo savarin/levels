@@ -29,7 +29,11 @@ func loadWords() ([]string, error) {
 	s := bufio.NewScanner(f)
 
 	for s.Scan() && len(w) < limit {
-		w = append(w, strings.ToLower(s.Text()))
+		word := s.Text()
+
+		if strings.ToLower(word) == word {
+			w = append(w, word)
+		}
 	}
 
 	return w, nil
@@ -80,5 +84,4 @@ func main() {
 	fmt.Printf("%-20s%-20s%-20s%-20s%-20s\n", "name", "puts", "deletes", "gets", "rangescan")
 	runTest(words, NewSimpleDB(), "simple")
 	runTest(words, NewLinkedListDB(), "linked list")
-	fmt.Printf("\n")
 }

@@ -47,11 +47,16 @@ func Flush(db DB, w io.Writer) error {
 	var sparseIndex []sparseIndexEntry
 	var nextCheckpoint uint32
 
+	var key, value []byte
+	var finalKey []byte
+	var finalOffset uint32
+
 	for {
 		startOffset := writer.Offset
 
-		key := iter.Key()
-		value := iter.Value()
+		key = iter.Key()
+		value = iter.Value()
+		finalOffset = startOffset
 
 		if nextCheckpoint <= startOffset {
 			e := sparseIndexEntry{
@@ -61,6 +66,8 @@ func Flush(db DB, w io.Writer) error {
 
 			sparseIndex = append(sparseIndex, e)
 			nextCheckpoint = startOffset + uint32(blockSize)
+
+			finalKey = key
 		}
 
 		err := writer.WriteLen(uint32(len(key)))
@@ -90,25 +97,36 @@ func Flush(db DB, w io.Writer) error {
 		}
 	}
 
+	if string(key) != string(finalKey) {
+		e := sparseIndexEntry{
+			key:    key,
+			offset: finalOffset,
+		}
+
+		sparseIndex = append(sparseIndex, e)
+	}
+
 	sparseIndexOffset := writer.Offset
 
 	for _, e := range sparseIndex {
-		key := e.key
-		offset := e.offset
+		indexKey := e.key
+		indexOffset := e.offset
 
-		err := writer.WriteLen(uint32(len(key)))
+		fmt.Println("index", string(indexKey), indexOffset)
+
+		err := writer.WriteLen(uint32(len(indexKey)))
 		if err != nil {
-			return fmt.Errorf("writing length (%d) of key in sparse index%q: %w", len(key), key, err)
+			return fmt.Errorf("writing length (%d) of key in sparse index%q: %w", len(indexKey), indexKey, err)
 		}
 
-		err = writer.Write(key)
+		err = writer.Write(indexKey)
 		if err != nil {
-			return fmt.Errorf("writing key %q in sparse index: %w", key, err)
+			return fmt.Errorf("writing key %q in sparse index: %w", indexKey, err)
 		}
 
-		err = writer.WriteLen(offset)
+		err = writer.WriteLen(indexOffset)
 		if err != nil {
-			return fmt.Errorf("writing value %q in sparse index: %w", offset, err)
+			return fmt.Errorf("writing value %q in sparse index: %w", indexOffset, err)
 		}
 	}
 
