@@ -85,3 +85,15 @@ func Open(r ReaderSeeker) (*Table, error) {
 		sparseIndex: sparseIndex,
 	}, nil
 }
+
+func (t Table) getBlock(key []byte) (startOffset, endOffset uint32, isOffset bool) {
+	for i := 1; i < len(t.sparseIndex); i++ {
+		endKey := t.sparseIndex[i].key
+
+		if string(key) < string(endKey) {
+			return t.sparseIndex[i-1].offset, t.sparseIndex[i].offset, true
+		}
+	}
+
+	return 0, 0, false
+}
