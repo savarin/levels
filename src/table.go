@@ -86,7 +86,7 @@ func Open(r ReaderSeeker) (*Table, error) {
 	}, nil
 }
 
-func (t Table) getBlock(key []byte) (startOffset, endOffset uint32, isOffset bool) {
+func (t Table) getBlock(key []byte) (offsetStart, offsetEnd uint32, isOffset bool) {
 	for i := 1; i < len(t.sparseIndex); i++ {
 		endKey := t.sparseIndex[i].key
 
@@ -96,4 +96,56 @@ func (t Table) getBlock(key []byte) (startOffset, endOffset uint32, isOffset boo
 	}
 
 	return 0, 0, false
+}
+
+func (t Table) findKey(offsetStart, offsetEnd uint32, key []byte) (value []byte, err error) {
+	reader := io.NewSectionReader(t.reader, int64(offsetStart), int64(offsetEnd-offsetStart))
+
+	for {
+		var keyLength uint32
+		err = binary.Read(reader, binary.LittleEndian, &keyLength)
+		if err != nil {
+			if err == io.EOF {
+				return nil, KeyError
+			}
+
+			return nil, fmt.Errorf("reading key length: %s", err)
+		}
+
+		currentKey := make([]byte, keyLength)
+		_, err = reader.Read(currentKey)
+		if err != nil {
+			if err == io.EOF {
+				return nil, fmt.Errorf("corrupted block: end of block while reading key")
+			}
+
+			return nil, fmt.Errorf("reading key: %s", err)
+		}
+
+		if string(key) != string(currentKey) {
+			continue
+		}
+
+		var valueLength uint32
+		err = binary.Read(reader, binary.LittleEndian, &valueLength)
+		if err != nil {
+			if err == io.EOF {
+				return nil, ValueError
+			}
+
+			return nil, fmt.Errorf("reading value length: %s", err)
+		}
+
+		value := make([]byte, valueLength)
+		_, err = reader.Read(value)
+		if err != nil {
+			if err == io.EOF {
+				return nil, fmt.Errorf("corrupted block: end of block while reading value")
+			}
+
+			return nil, fmt.Errorf("reading value: %s", err)
+		}
+
+		return value, nil
+	}
 }
