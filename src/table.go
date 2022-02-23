@@ -11,7 +11,7 @@ type Table struct {
 	sparseIndex []sparseIndexEntry
 }
 
-func Open(r ReaderSeeker) (*Table, error) {
+func Open(r ReaderSeeker) (ImmutableDB, error) {
 	indexEnd, err := r.Seek(-4, io.SeekEnd)
 	if err != nil {
 		return nil, fmt.Errorf("seeking to end of file to read index start location: %s", err)
@@ -122,32 +122,33 @@ func (t Table) findKey(offsetStart, offsetEnd uint32, key []byte) (value []byte,
 			return nil, fmt.Errorf("reading key: %s", err)
 		}
 
-		if string(key) != string(currentKey) {
-			continue
+		if string(key) == string(currentKey) {
+			break
 		}
-
-		var valueLength uint32
-		err = binary.Read(reader, binary.LittleEndian, &valueLength)
-		if err != nil {
-			if err == io.EOF {
-				return nil, ValueError
-			}
-
-			return nil, fmt.Errorf("reading value length: %s", err)
-		}
-
-		value := make([]byte, valueLength)
-		_, err = reader.Read(value)
-		if err != nil {
-			if err == io.EOF {
-				return nil, fmt.Errorf("corrupted block: end of block while reading value")
-			}
-
-			return nil, fmt.Errorf("reading value: %s", err)
-		}
-
-		return value, nil
 	}
+
+	var valueLength uint32
+	err = binary.Read(reader, binary.LittleEndian, &valueLength)
+	if err != nil {
+		if err == io.EOF {
+			return nil, ValueError
+		}
+
+		return nil, fmt.Errorf("reading value length: %s", err)
+	}
+
+	v := make([]byte, valueLength)
+	_, err = reader.Read(v)
+	if err != nil {
+		if err == io.EOF {
+			return nil, fmt.Errorf("corrupted block: end of block while reading value")
+		}
+
+		return nil, fmt.Errorf("reading value: %s", err)
+	}
+
+	return v, nil
+
 }
 
 func (t Table) Get(key []byte) (value []byte, err error) {
