@@ -149,3 +149,22 @@ func (t Table) findKey(offsetStart, offsetEnd uint32, key []byte) (value []byte,
 		return value, nil
 	}
 }
+
+func (t Table) Get(key []byte) (value []byte, err error) {
+	offsetStart, offsetEnd, isOffset := t.getBlock(key)
+	if !isOffset {
+		return nil, KeyError
+	}
+
+	v, err := t.findKey(offsetStart, offsetEnd, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (t Table) Has(key []byte) (ret bool, err error) {
+	_, e := t.Get(key)
+	return e == nil, nil
+}
