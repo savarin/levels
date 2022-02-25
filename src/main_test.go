@@ -19,6 +19,7 @@ var (
 func TestRun(t *testing.T) {
 	testRun(t, func() DB { return NewSimpleDB() })
 	testRun(t, func() DB { return NewLinkedListDB() })
+	testRun(t, func() DB { return NewSkipListDB() })
 }
 
 func testRun(t *testing.T, factory func() DB) {

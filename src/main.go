@@ -84,4 +84,5 @@ func main() {
 	fmt.Printf("%-20s%-20s%-20s%-20s%-20s\n", "name", "puts", "deletes", "gets", "rangescan")
 	runTest(words, NewSimpleDB(), "simple")
 	runTest(words, NewLinkedListDB(), "linked list")
+	runTest(words, NewSkipListDB(), "skip list")
 }

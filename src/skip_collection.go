@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"math/rand"
 )
 
@@ -17,6 +18,11 @@ type skipListNode struct {
 type SkipListDB struct {
 	head   *skipListNode
 	levels int
+}
+
+func NewSkipListDB() *SkipListDB {
+	head := &skipListNode{level: maxLevel}
+	return &SkipListDB{head: head, levels: 1}
 }
 
 func (db *SkipListDB) findPrevious(key []byte) [maxLevel]*skipListNode {
@@ -55,7 +61,7 @@ func generateLevel() int {
 	return level
 }
 
-func (db *SkipListDB) Get(key []byte) ([]byte, error) {
+func (db *SkipListDB) Get(key []byte) (value []byte, err error) {
 	previous := db.findPrevious(key)
 	node := verifyNode(previous, key)
 
@@ -64,6 +70,11 @@ func (db *SkipListDB) Get(key []byte) ([]byte, error) {
 	}
 
 	return nil, KeyError
+}
+
+func (db *SkipListDB) Has(key []byte) (ret bool, err error) {
+	_, ok := db.Get(key)
+	return ok == nil, nil
 }
 
 func (db *SkipListDB) Put(key, value []byte) error {
@@ -115,10 +126,14 @@ func (db *SkipListDB) Delete(key []byte) error {
 	return KeyError
 }
 
-func (db *SkipListDB) RangeScan(start, limit []byte) Iterator {
+func (db *SkipListDB) RangeScan(start, limit []byte) (Iterator, error) {
 	previous := db.findPrevious(start)
 	node := previous[0].next[0]
-	return &SkipListIterator{db: db, node: node, start: start, limit: limit}
+	return &SkipListIterator{db: db, node: node, start: start, limit: limit}, nil
+}
+
+func (db *SkipListDB) Flush(w io.Writer) error {
+	return Flush(db, w)
 }
 
 type SkipListIterator struct {
@@ -128,6 +143,14 @@ type SkipListIterator struct {
 }
 
 func (iter *SkipListIterator) Next() bool {
+	if iter.node.next[0] == nil {
+		return false
+	}
+
+	if len(iter.limit) > 0 && string(iter.node.item.Key) > string(iter.limit) {
+		return false
+	}
+
 	iter.node = iter.node.next[0]
 	return true
 }
