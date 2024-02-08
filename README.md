@@ -1,6 +1,6 @@
 # levels
 
-`levels` is a basic LevelDB clone
+levels is a basic LevelDB clone
 
 ## Context
 
